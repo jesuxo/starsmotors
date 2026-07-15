@@ -1390,9 +1390,6 @@ class SaprodController extends Controller
     {
         $comercialid = session('comercialid') ;
 
-        $comercial    = Sacomercial::find($comercialid);
-        $match        = $comercialid;
-
         $producto  = Saprod::find($id);
         $producto->fill($request->all());
 
@@ -1470,7 +1467,7 @@ class SaprodController extends Controller
         $codprod  = $producto->codprod;
 
 
-        $otrosprod = Saprod::where(['codprod'=>$codprod, 'comercial' => $match])->get();
+        $otrosprod = Saprod::where(['codprod'=>$codprod, 'comercial' => $comercialid])->get();
         foreach ($otrosprod as $otro){
             $otro->descrip  = $request->descrip;
             $otro->descrip2 = $request->descrip2;
@@ -1485,11 +1482,11 @@ class SaprodController extends Controller
         $prodsucursal = Saprodsucursal::with('producto')->where('codprod', $producto->codprod)->get();
         if($prodsucursal)
             foreach ($prodsucursal as $item){
-                if($item->producto->comercial == $match)
+                if($item->producto->comercial == $comercialid)
                     $item->delete();
             }
 
-        $comerciales = Sacomercial::where('match', $match)->get();
+        $comerciales = Sacomercial::where('id', $comercialid)->get();
 
         foreach ($comerciales as $comercial){
 
