@@ -2737,17 +2737,13 @@
                             <small class="text-muted">Ref: ${referencia || 'N/A'}</small>
                         </div>
                         <div class="input-group">
-                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(-1)">-</button>
+
                             <input type="number" class="form-control text-center" id="cantidadInput"
                                    value="1" min="0.01" step="0.01"
                                    style="font-size: 1.5rem; font-weight: bold;">
-                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(1)">+</button>
+
                         </div>
-                        <div class="mt-2 text-center">
-                            <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidadRapida(5)">+5</button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidadRapida(10)">+10</button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidadRapida(20)">+20</button>
-                        </div>
+
                         <div class="mt-3">
                             <small class="text-muted">* Solo números, use punto para decimales</small>
                         </div>
