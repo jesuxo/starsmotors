@@ -1391,7 +1391,7 @@ class SaprodController extends Controller
         $comercialid = session('comercialid') ;
 
         $comercial    = Sacomercial::find($comercialid);
-        $match        = $comercial->match;
+        $match        = $comercialid;
 
         $producto  = Saprod::find($id);
         $producto->fill($request->all());
