@@ -800,12 +800,9 @@
 @section('scripts')
     <script src="{{ URL::asset('build/js/app.js') }}"></script>
     <script>
-        <script>
-            // ... (código existente)
 
-            // ============ FUNCIONES DE EDICIÓN DE CLIENTE ============
 
-            function editarCliente() {
+        function editarCliente() {
             // Ocultar vista de datos
             $('#clienteData').hide();
 
@@ -817,11 +814,11 @@
 
             // Enfocar el primer campo
             setTimeout(() => {
-            $('#editClienteNombre').focus();
-        }, 400);
+                $('#editClienteNombre').focus();
+            }, 400);
         }
 
-            function cancelarEditarCliente() {
+        function cancelarEditarCliente() {
             // Ocultar formulario
             $('#editClienteForm').hide();
 
@@ -835,159 +832,159 @@
             $('.is-invalid-edit').removeClass('is-invalid-edit');
         }
 
-            function guardarCliente() {
+        function guardarCliente() {
             // Validar campos obligatorios
             const cedula = $('#editClienteCedula').val().trim();
             const nombre = $('#editClienteNombre').val().trim();
 
             if (!cedula) {
-            $('#editClienteCedula').addClass('is-invalid-edit');
-            mostrarNotificacion('⚠️ La cédula/RIF es obligatoria', 'warning');
-            $('#editClienteCedula').focus();
-            return;
-        }
+                $('#editClienteCedula').addClass('is-invalid-edit');
+                mostrarNotificacion('⚠️ La cédula/RIF es obligatoria', 'warning');
+                $('#editClienteCedula').focus();
+                return;
+            }
 
             if (!nombre) {
-            $('#editClienteNombre').addClass('is-invalid-edit');
-            mostrarNotificacion('⚠️ El nombre es obligatorio', 'warning');
-            $('#editClienteNombre').focus();
-            return;
-        }
+                $('#editClienteNombre').addClass('is-invalid-edit');
+                mostrarNotificacion('⚠️ El nombre es obligatorio', 'warning');
+                $('#editClienteNombre').focus();
+                return;
+            }
 
             // Limpiar validaciones
             $('.is-invalid-edit').removeClass('is-invalid-edit');
 
             // Preparar datos
             const data = {
-            codclie: $('#editClienteCodclie').val(),
-            cedula: cedula,
-            nombre: nombre,
-            telefono: $('#editClienteTelefono').val().trim(),
-            email: $('#editClienteEmail').val().trim(),
-            _token: '{{ csrf_token() }}'
-        };
+                codclie: $('#editClienteCodclie').val(),
+                cedula: cedula,
+                nombre: nombre,
+                telefono: $('#editClienteTelefono').val().trim(),
+                email: $('#editClienteEmail').val().trim(),
+                _token: '{{ csrf_token() }}'
+            };
 
             // Validar email si fue ingresado
             if (data.email && !validarEmail(data.email)) {
-            $('#editClienteEmail').addClass('is-invalid-edit');
-            mostrarNotificacion('⚠️ El email no tiene formato válido', 'warning');
-            $('#editClienteEmail').focus();
-            return;
-        }
+                $('#editClienteEmail').addClass('is-invalid-edit');
+                mostrarNotificacion('⚠️ El email no tiene formato válido', 'warning');
+                $('#editClienteEmail').focus();
+                return;
+            }
 
             // Mostrar loading
             $('#loadingOverlay').fadeIn();
 
             $.ajax({
-            url: '{{ route("mantenimiento.rapido.actualizar-cliente") }}',
-            method: 'POST',
-            data: data,
-            success: function(response) {
-            $('#loadingOverlay').fadeOut();
+                url: '{{ route("mantenimiento.rapido.actualizar-cliente") }}',
+                method: 'POST',
+                data: data,
+                success: function(response) {
+                    $('#loadingOverlay').fadeOut();
 
-            if (response.success) {
-            // Actualizar los datos en la vista
-            $('#clienteNombre').text(response.cliente.descrip);
-            $('#clienteCedula').text(response.cliente.id3);
+                    if (response.success) {
+                        // Actualizar los datos en la vista
+                        $('#clienteNombre').text(response.cliente.descrip);
+                        $('#clienteCedula').text(response.cliente.id3);
 
-            let telefono = response.cliente.telef || response.cliente.movil || 'N/A';
-            $('#clienteTelefono').text(telefono);
+                        let telefono = response.cliente.telef || response.cliente.movil || 'N/A';
+                        $('#clienteTelefono').text(telefono);
 
-            if (response.cliente.email) {
-            // Si el email existe, asegurarse de que la fila esté visible
-            if ($('#clienteEmail').length === 0) {
-            // Agregar fila de email si no existe
-            $('#clienteData table').append(`
+                        if (response.cliente.email) {
+                            // Si el email existe, asegurarse de que la fila esté visible
+                            if ($('#clienteEmail').length === 0) {
+                                // Agregar fila de email si no existe
+                                $('#clienteData table').append(`
                                 <tr>
                                     <td><strong>Email:</strong></td>
                                     <td id="clienteEmail">${response.cliente.email}</td>
                                 </tr>
                             `);
-        } else {
-            $('#clienteEmail').text(response.cliente.email);
-        }
-        } else {
-            // Si no hay email, eliminar la fila si existe
-            $('#clienteEmail').closest('tr').remove();
+                            } else {
+                                $('#clienteEmail').text(response.cliente.email);
+                            }
+                        } else {
+                            // Si no hay email, eliminar la fila si existe
+                            $('#clienteEmail').closest('tr').remove();
+                        }
+
+                        // Actualizar también en el modal de compartir
+                        // Actualizar el teléfono para WhatsApp
+                        if (response.cliente.telef || response.cliente.movil) {
+                            // Actualizar el botón de WhatsApp con el nuevo número
+                            const telefonoCliente = response.cliente.telef || response.cliente.movil;
+                            $('.btn-whatsapp').attr('onclick',
+                                `compartirWhatsApp('{{ route('cliente.mantenimiento.ver', $mantenimiento->token_cliente) }}')`
+                            );
+                        }
+
+                        // Ocultar formulario y mostrar datos
+                        cancelarEditarCliente();
+
+                        mostrarNotificacion('✅ Cliente actualizado exitosamente', 'success');
+
+                        // Refrescar la página después de 1.5 segundos para actualizar todos los datos
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        mostrarNotificacion('❌ ' + (response.message || 'Error al actualizar'), 'error');
+                    }
+                },
+                error: function(xhr) {
+                    $('#loadingOverlay').fadeOut();
+
+                    let mensaje = 'Error al actualizar el cliente';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errores = Object.values(xhr.responseJSON.errors).flat().join('\n');
+                        mensaje = errores;
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        mensaje = xhr.responseJSON.message;
+                    }
+
+                    mostrarNotificacion('❌ ' + mensaje, 'error');
+
+                    // Mostrar errores específicos en los campos
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        if (errors.cedula) {
+                            $('#editClienteCedula').addClass('is-invalid-edit');
+                        }
+                        if (errors.nombre) {
+                            $('#editClienteNombre').addClass('is-invalid-edit');
+                        }
+                        if (errors.email) {
+                            $('#editClienteEmail').addClass('is-invalid-edit');
+                        }
+                    }
+                }
+            });
         }
 
-            // Actualizar también en el modal de compartir
-            // Actualizar el teléfono para WhatsApp
-            if (response.cliente.telef || response.cliente.movil) {
-            // Actualizar el botón de WhatsApp con el nuevo número
-            const telefonoCliente = response.cliente.telef || response.cliente.movil;
-            $('.btn-whatsapp').attr('onclick',
-            `compartirWhatsApp('{{ route('cliente.mantenimiento.ver', $mantenimiento->token_cliente) }}')`
-            );
-        }
+        // ============ FUNCIONES DE VALIDACIÓN ============
 
-            // Ocultar formulario y mostrar datos
-            cancelarEditarCliente();
-
-            mostrarNotificacion('✅ Cliente actualizado exitosamente', 'success');
-
-            // Refrescar la página después de 1.5 segundos para actualizar todos los datos
-            setTimeout(() => {
-            location.reload();
-        }, 1500);
-        } else {
-            mostrarNotificacion('❌ ' + (response.message || 'Error al actualizar'), 'error');
-        }
-        },
-            error: function(xhr) {
-            $('#loadingOverlay').fadeOut();
-
-            let mensaje = 'Error al actualizar el cliente';
-            if (xhr.responseJSON && xhr.responseJSON.errors) {
-            const errores = Object.values(xhr.responseJSON.errors).flat().join('\n');
-            mensaje = errores;
-        } else if (xhr.responseJSON && xhr.responseJSON.message) {
-            mensaje = xhr.responseJSON.message;
-        }
-
-            mostrarNotificacion('❌ ' + mensaje, 'error');
-
-            // Mostrar errores específicos en los campos
-            if (xhr.responseJSON && xhr.responseJSON.errors) {
-            const errors = xhr.responseJSON.errors;
-            if (errors.cedula) {
-            $('#editClienteCedula').addClass('is-invalid-edit');
-        }
-            if (errors.nombre) {
-            $('#editClienteNombre').addClass('is-invalid-edit');
-        }
-            if (errors.email) {
-            $('#editClienteEmail').addClass('is-invalid-edit');
-        }
-        }
-        }
-        });
-        }
-
-            // ============ FUNCIONES DE VALIDACIÓN ============
-
-            function validarEmail(email) {
+        function validarEmail(email) {
             const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return re.test(email);
         }
 
-            // ============ FUNCIÓN DE NOTIFICACIÓN MEJORADA ============
+        // ============ FUNCIÓN DE NOTIFICACIÓN MEJORADA ============
 
-            function mostrarNotificacion(mensaje, tipo) {
+        function mostrarNotificacion(mensaje, tipo) {
             // Eliminar notificaciones anteriores
             $('.custom-notification').remove();
 
             let icono = tipo === 'success' ? '✅' :
-            tipo === 'error' ? '❌' :
-            tipo === 'warning' ? '⚠️' : 'ℹ️';
+                tipo === 'error' ? '❌' :
+                    tipo === 'warning' ? '⚠️' : 'ℹ️';
 
             let colorBg = tipo === 'success' ? '#c1e0cd' :
-            tipo === 'error' ? '#ffe6e6' :
-            tipo === 'warning' ? '#fff9e6' : '#e6f3ff';
+                tipo === 'error' ? '#ffe6e6' :
+                    tipo === 'warning' ? '#fff9e6' : '#e6f3ff';
 
             let colorBorder = tipo === 'success' ? '#28a745' :
-            tipo === 'error' ? '#dc3545' :
-            tipo === 'warning' ? '#ffc107' : '#17a2b8';
+                tipo === 'error' ? '#dc3545' :
+                    tipo === 'warning' ? '#ffc107' : '#17a2b8';
 
             let notificacion = $(`
             <div class="custom-notification" style="position: fixed; top: 20px; right: 20px; z-index: 10000;
@@ -1001,31 +998,26 @@
             $('body').append(notificacion);
 
             setTimeout(() => {
-            notificacion.css('animation', 'slideOutRight 0.3s ease-out');
-            setTimeout(() => {
-            notificacion.remove();
-        }, 300);
-        }, 4000);
+                notificacion.css('animation', 'slideOutRight 0.3s ease-out');
+                setTimeout(() => {
+                    notificacion.remove();
+                }, 300);
+            }, 4000);
         }
 
-            // ============ VALIDAR AL PRESIONAR ENTER ============
 
-            $(document).on('keypress', '#editClienteForm input', function(e) {
+        $(document).on('keypress', '#editClienteForm input', function(e) {
             if (e.which === 13) {
-            e.preventDefault();
-            guardarCliente();
-        }
+                e.preventDefault();
+                guardarCliente();
+            }
         });
 
-            // ============ ELIMINAR VALIDACIÓN AL ESCRIBIR ============
 
-            $(document).on('input', '#editClienteForm input', function() {
+        $(document).on('input', '#editClienteForm input', function() {
             $(this).removeClass('is-invalid-edit');
         });
 
-            // ============ CÓDIGO EXISTENTE ============
-            // ... (el resto de tu código JavaScript)
-    </script>
 
         // Función para ver foto en modal
         function verFoto(url) {
