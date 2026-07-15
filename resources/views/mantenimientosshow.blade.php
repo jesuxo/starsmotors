@@ -618,8 +618,8 @@
                             }
 
                             // Construir mensaje con emojis y formato
-                            let mensaje = `¡Hola ${cliente.nombre}! \n\n`;
-                            mensaje += `Tu vehículo *${vehiculo.marca} ${vehiculo.modelo}* (${vehiculo.year}) ya fue atendido en nuestro taller!  \n\n`;
+                            let mensaje = `¡Hola ${cliente.nombre}!\n\n`;
+                            mensaje += `Tu vehículo *${vehiculo.marca} ${vehiculo.modelo}* (${vehiculo.year}) ya fue atendido en nuestro taller! \n\n`;
                             mensaje += ` *Servicios realizados:*\n${serviciosText}\n\n`;
 
                             if (mantenimientoData.kilometraje !== 'No registrado') {
@@ -627,7 +627,7 @@
                             }
 
                             if (mantenimientoData.vendedor !== 'No especificado') {
-                                mensaje += ` *Atendido por:* ${mantenimientoData.vendedor}\n\n`;
+                                mensaje += `  *Atendido por:* ${mantenimientoData.vendedor}\n\n`;
                             } else {
                                 mensaje += `\n`;
                             }
@@ -639,7 +639,7 @@
 
                             mensaje += ` *Ver detalles completos, fotos y próximos mantenimientos aquí:*\n`;
                             mensaje += `${url}\n\n`;
-                            mensaje += `¡Gracias por confiar en nosotros! `;
+                            mensaje += `¡Gracias por confiar en nosotros!  `;
 
                             // Codificar el mensaje para URL
                             const mensajeCodificado = encodeURIComponent(mensaje);
