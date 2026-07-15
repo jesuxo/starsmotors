@@ -1388,13 +1388,19 @@ class SaprodController extends Controller
 
     public function update(Request $request, $id)
     {
-        $comercial = session('comercialid') ;
+        $comercialid = session('comercialid') ;
+
+        $comercial    = Sacomercial::find($comercialid);
+        $match        = $comercial->match;
 
         $producto  = Saprod::find($id);
         $producto->fill($request->all());
-        $producto->esexento = 1;  //// luego ver como manejamos esto
 
-        if(isset($request->preciod)) {
+        if($comercialid == 1 or $comercialid== 3 or $comercialid== 4){
+            $producto->esexento = 1;  //// luego ver como manejamos esto
+        }
+
+        if(isset($request->preciod)   ) {
             $preciod = $request->preciod;
             $coma = substr_count($preciod, ',');
             $punto = substr_count($preciod, '.');
@@ -1408,36 +1414,36 @@ class SaprodController extends Controller
             $producto->preciod = $preciod;
         }
         ////////////////////////////////////////////////////////////////////////////
-        if(isset($request->costod)){
-            $costod =  $request->costod;
+        if(isset($request->costod) ) {
+            $costod = $request->costod;
 
-            $coma  = strpos($costod, ',');
+            $coma = strpos($costod, ',');
             $punto = strpos($costod, '.');
 
-            if($coma>0 and $punto>0){
-                $costod = str_replace(".",'',$costod);
-                $costod = str_replace(",",'.',$costod);
+            if ($coma > 0 and $punto > 0) {
+                $costod = str_replace(".", '', $costod);
+                $costod = str_replace(",", '.', $costod);
             }
-            if($coma>0  and !$punto)
-                $costod = str_replace(",",'.',$costod);
+            if ($coma > 0 and !$punto)
+                $costod = str_replace(",", '.', $costod);
 
             $producto->costod = $costod;
         }
         ////////////////////////////////////////////////////////////////////////////
-        if(isset($request->costod2)){
-            $costod2 =  $request->costod2;
-            $coma  = substr_count($costod2, ',');
+        if(isset($request->costod2)) {
+            $costod2 = $request->costod2;
+            $coma = substr_count($costod2, ',');
             $punto = substr_count($costod2, '.');
 
-            if($coma>0 and $punto>0){
-                $costod2 = str_replace(".",'',$costod2);
-                $costod2 = str_replace(",",'.',$costod2);
+            if ($coma > 0 and $punto > 0) {
+                $costod2 = str_replace(".", '', $costod2);
+                $costod2 = str_replace(",", '.', $costod2);
             }
-            if($coma>0  and !$punto)
-                $costod3 = str_replace(",",'.',$costod2);
+            if ($coma > 0 and !$punto)
+                $costod3 = str_replace(",", '.', $costod2);
             $producto->costod2 = $costod2;
         }
-        //////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
         if(isset($request->costod3)) {
             $costod3 = $request->costod3;
             $coma = substr_count($costod3, ',');
@@ -1453,27 +1459,60 @@ class SaprodController extends Controller
         }
         ////////////////////////////////////////////////////////////////////////////
 
-        if(!$request->exdecimal)
+        if(!isset($request->exdecimal))
             $producto->exdecimal = 0;
 
         if(!$request->activo)
-            $producto->activo = 0;
+            $producto->activo    = 0;
 
         $producto->save();
 
-        $prodsucursal = Saprodsucursal::with('producto')->where('codprod', $producto->codprod)->get();
+        $codprod  = $producto->codprod;
 
+
+        $otrosprod = Saprod::where(['codprod'=>$codprod, 'comercial' => $match])->get();
+        foreach ($otrosprod as $otro){
+            $otro->descrip  = $request->descrip;
+            $otro->descrip2 = $request->descrip2;
+            $otro->descrip3 = $request->descrip3;
+            $otro->descrip4 = $request->descrip4;
+            $otro->marca    = $request->marca;
+            $otro->codinst  = $request->codinst;
+            $otro->refere   = $request->refere;
+            $otro->save();
+        }
+
+        $prodsucursal = Saprodsucursal::with('producto')->where('codprod', $producto->codprod)->get();
         if($prodsucursal)
             foreach ($prodsucursal as $item){
-                if($item->producto->comercial == $comercial)
+                if($item->producto->comercial == $match)
                     $item->delete();
             }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Producto actualizado correctamente',
-            'producto' => $producto
-        ]);
+        $comerciales = Sacomercial::where('match', $match)->get();
+
+        foreach ($comerciales as $comercial){
+
+            $product = Saprod::where(['codprod' => $codprod, 'comercial' => $comercial->id])
+                ->first();
+
+            if(isset($product) and isset($product->codprod) and $product->codprod != ''){
+                //
+            }else{
+                $newprod = new Saprod();
+                $newprod->fill($request->all());
+                $newprod->codprod   = $codprod;
+                $newprod->preciod   = 0;
+                $newprod->costod    =  0;
+                if($comercial->id == 1 or $comercial->id == 2 or $comercial->id == 3){  $newprod->esexento = 1; }else{$newprod->esexento = 0;}
+                $newprod->costod2   =  0;
+                $newprod->costod3   =  0;
+                $newprod->comercial = $comercial->id;
+                $newprod->save();
+            }
+        }
+
+        return redirect()->route('productos.edit',$id);
     }
 
     public function establecerImagenPrincipal(Request $request, $id, $imagenId)
