@@ -545,8 +545,8 @@
                                         <button class="btn btn-sm btn-success" onclick="compartirWhatsApp('{{ route('cliente.mantenimiento.ver', $mantenimiento->token_cliente) }}')">
                                             <i class="ri-whatsapp-line"></i> Compartir en WhatsApp
                                         </button>
-                                        <button onclick="enviarNotificacionSMS({{ $mantenimiento->id }})"
-                                                class="btn btn-success me-2"
+                                        <button style="display: none !important;"  onclick="enviarNotificacionSMS({{ $mantenimiento->id }})"
+                                                class=" btn btn-success me-2"
                                                 id="btnNotificarSMS">
                                             <i class="ri-whatsapp-line"></i> Notificar por SMS
                                         </button>
@@ -567,8 +567,89 @@
                     <script>
 
                         function compartirWhatsApp(url) {
-                            let mensaje = encodeURIComponent(`¡Hola! Mira el detalle del mantenimiento de tu vehículo {{$mantenimiento->vehiculo->marca}} {{$mantenimiento->vehiculo->modelo}}\n\n${url}`);
-                            window.open(`https://wa.me/?phone={{ (isset($mantenimiento->vehiculo->cliente->telef))? $mantenimiento->vehiculo->cliente->telef : ( (isset($mantenimiento->vehiculo->cliente->movil))? $mantenimiento->vehiculo->cliente->movil : '') }}&&text=${mensaje}`, '_blank');
+                            // Obtener datos del cliente y vehículo desde el mantenimiento
+                            const cliente = {
+                                nombre: '{{ addslashes($mantenimiento->vehiculo->cliente->descrip) }}',
+                                telefono: '{{ addslashes($mantenimiento->vehiculo->cliente->telef ?? $mantenimiento->vehiculo->cliente->movil ?? '') }}'
+                            };
+
+                            const vehiculo = {
+                                marca: '{{ addslashes($mantenimiento->vehiculo->marca) }}',
+                                modelo: '{{ addslashes($mantenimiento->vehiculo->modelo) }}',
+                                year: '{{ addslashes($mantenimiento->vehiculo->year ?? 'N/A') }}',
+                                placa: '{{ addslashes($mantenimiento->vehiculo->identificacion) }}'
+                            };
+
+                            const mantenimientoData = {
+                                fecha: '{{ $mantenimiento->fechaformat }}',
+                                kilometraje: '{{ $mantenimiento->kilometraje ? number_format($mantenimiento->kilometraje, 0, ",", ".") : 'No registrado' }}',
+                                vendedor: '{{ addslashes($mantenimiento->vendedor->descrip ?? 'No especificado') }}',
+                                observaciones: '{{ addslashes($mantenimiento->observaciones ?? '') }}'
+                            };
+
+                            // Obtener tipos de mantenimiento realizados
+                            let tiposRealizados = [];
+                            @if($mantenimiento->tipos && $mantenimiento->tipos->count() > 0)
+                            @foreach($mantenimiento->tipos as $tipo)
+                            tiposRealizados.push('{{ addslashes($tipo->tipo) }}');
+                            @endforeach
+                            @elseif($mantenimiento->tipo_mantenimiento && $mantenimiento->tipo_mantenimiento != 'multiple')
+                            tiposRealizados.push('{{ addslashes($mantenimiento->tipo_mantenimiento) }}');
+                            @endif
+
+                            // Traducir tipos de mantenimiento a español
+                            const tiposTraducidos = {
+                                'cambio_aceite': 'Cambio de aceite',
+                                'cambio_filtro_aceite': 'Cambio de filtro de aceite',
+                                'cambio_filtro_gasolina': 'Cambio de filtro de gasolina',
+                                'cambio_filtro_aire': 'Cambio de filtro de aire',
+                                'mantenimiento_inyectores': 'Mantenimiento de inyectores',
+                                'bateria': 'Revisión de batería',
+                                'otros': 'Otros servicios'
+                            };
+
+                            let serviciosText = tiposRealizados.map(t => {
+                                return tiposTraducidos[t] || t.replace('_', ' ');
+                            }).join(', ');
+
+                            // Si no hay tipos, mostrar mensaje genérico
+                            if (!serviciosText) {
+                                serviciosText = 'Mantenimiento general';
+                            }
+
+                            // Construir mensaje con emojis y formato
+                            let mensaje = `¡Hola ${cliente.nombre}! 👋\n\n`;
+                            mensaje += `Tu vehículo *${vehiculo.marca} ${vehiculo.modelo}* (${vehiculo.year}) ya fue atendido en nuestro taller! 🚗✨\n\n`;
+                            mensaje += `✅ *Servicios realizados:*\n${serviciosText}\n\n`;
+
+                            if (mantenimientoData.kilometraje !== 'No registrado') {
+                                mensaje += `📊 *Kilometraje actual:* ${mantenimientoData.kilometraje} km\n`;
+                            }
+
+                            if (mantenimientoData.vendedor !== 'No especificado') {
+                                mensaje += `👨‍🔧 *Atendido por:* ${mantenimientoData.vendedor}\n\n`;
+                            } else {
+                                mensaje += `\n`;
+                            }
+
+                            // Agregar observaciones si existen
+                            if (mantenimientoData.observaciones) {
+                                mensaje += `📝 *Observaciones:*\n${mantenimientoData.observaciones}\n\n`;
+                            }
+
+                            mensaje += `📋 *Ver detalles completos, fotos y próximos mantenimientos aquí:*\n`;
+                            mensaje += `${url}\n\n`;
+                            mensaje += `¡Gracias por confiar en nosotros! 🙏✨`;
+
+                            // Codificar el mensaje para URL
+                            const mensajeCodificado = encodeURIComponent(mensaje);
+
+                            // Obtener número de teléfono del cliente
+                            const telefonoCliente = cliente.telefono || '';
+
+                            // Abrir WhatsApp con el mensaje
+                            const urlWhatsApp = `https://wa.me/${telefonoCliente}?text=${mensajeCodificado}`;
+                            window.open(urlWhatsApp, '_blank');
                         }
 
                         function copyText(copyInput) {
