@@ -2754,7 +2754,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn pastel-btn-success" id="btnConfirmarCantidad">
+                        <button type="button" class="btn pastel-btn-success" id="btnConfirmarCantidad" style="background: #5ae59e !important; color: #fff !important;">
                             <i class="ri-check-line"></i> Agregar
                         </button>
                     </div>
