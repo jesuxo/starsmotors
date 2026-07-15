@@ -10,6 +10,7 @@ use App\Http\Controllers\ReporteProximosMantenimientosController;
 use App\Http\Controllers\MantenimientoRapidoController;
 use App\Http\Controllers\SaprodController;
 use App\Http\Controllers\SafactController;
+use App\Http\Controllers\SaprodImagenController;
 use App\Http\Controllers\UserSucursalController;
 use Illuminate\Support\Facades\Route;
 
@@ -247,13 +248,25 @@ Route::middleware(['check.admin'])->group(function () {
         Route::post('sascursal/bancos', 'bancos');
     });
 
+    Route::prefix('productos-imagenes')->name('productos.imagenes.')->group(function () {
+        Route::get('/{codprod}', [SaprodImagenController::class, 'getImagenes'])->name('get');
+        Route::get('/{codprod}/principal', [SaprodImagenController::class, 'getImagenPrincipal'])->name('get-principal');
+        Route::post('/upload', [SaprodImagenController::class, 'upload'])->name('upload');
+        Route::post('/upload-multiple', [SaprodImagenController::class, 'uploadMultiple'])->name('upload-multiple');
+        Route::delete('/{id}', [SaprodImagenController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/set-principal', [SaprodImagenController::class, 'setPrincipal'])->name('set-principal');
+        Route::post('/{id}/set-thumbnail', [SaprodImagenController::class, 'setThumbnail'])->name('set-thumbnail');
+        Route::post('/{id}/set-icono', [SaprodImagenController::class, 'setIcono'])->name('set-icono');
+        Route::put('/{id}/tipo', [SaprodImagenController::class, 'updateTipo'])->name('update-tipo'); // Ruta para cambiar tipo
+        Route::post('/update-order', [SaprodImagenController::class, 'updateOrder'])->name('update-order');
+    });
+
 
     Route::post('/mantenimiento/{id}/generar-token', [\App\Http\Controllers\ClienteMantenimientoController::class, 'generarToken'])
         ->name('mantenimiento.generar-token');
 
     Route::post('/mantenimiento/{id}/enviar-whatsapp', [\App\Http\Controllers\ClienteMantenimientoController::class, 'enviarWhatsApp'])
         ->name('mantenimiento.enviar-whatsapp');
-
 
 
     Route::resource('depositos', \App\Http\Controllers\SadepoController::class);
