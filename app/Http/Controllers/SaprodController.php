@@ -1377,12 +1377,10 @@ class SaprodController extends Controller
         $comercialid = session('comercialid') ;
 
         $comercial    = Sacomercial::find($comercialid);
-        $match        = $comercial->match;
-
 
         $instancias = Sainsta::selectRaw("concat( repeat('&nbsp;',((nivel-1)*4)), Descrip ) as label, descrip, id, nivel, codinst ")
             ->with(['padre'])
-            ->where('comercial',$match)
+            ->where('comercial',$comercialid)
             ->orderBy('codalte','asc')->get();
 
         return view('product-edit', compact('instancias','producto', 'id'));
