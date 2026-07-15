@@ -344,7 +344,7 @@ class SiteController extends Controller
 
                 }
                 $productos = $productos->whereRaw("( $sql )");
-                
+
             }
 
             if($destacado == 1 and !$categoria and !$busqueda){
