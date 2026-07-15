@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\SaprodExport;
 use App\Imports\SaprodUpdate;
+use App\Models\Sacomercial;
 use App\Models\Saexis;
 use App\Models\Sainsta;
 use App\Models\Saitemfac;
@@ -1372,20 +1373,19 @@ class SaprodController extends Controller
     public function edit($id)
     {
         $producto   = Saprod::find($id);
-        $comercial = session('comercialid') ;
 
-        $instancias = Sainsta::selectRaw("codinst, descrip, nivel, codalte")
-            ->where('comercial', $comercial)
-            ->orderBy('codalte', 'asc')
-            ->get();
+        $comercialid = session('comercialid') ;
 
-        // Procesar el label con indentación para el select
-        $instanciasProcesadas = $instancias->map(function($item) {
-            $item->label = str_repeat('&nbsp;', ($item->nivel - 1) * 4) . e($item->descrip);
-            return $item;
-        });
+        $comercial    = Sacomercial::find($comercialid);
+        $match        = $comercial->match;
 
-        return view('product-edit', compact('instanciasProcesadas','producto', 'id'));
+
+        $instancias = Sainsta::selectRaw("concat( repeat('&nbsp;',((nivel-1)*4)), Descrip ) as label, descrip, id, nivel, codinst ")
+            ->with(['padre'])
+            ->where('comercial',$match)
+            ->orderBy('codalte','asc')->get();
+
+        return view('product-edit', compact('instancias','producto', 'id'));
     }
 
     public function update(Request $request, $id)
