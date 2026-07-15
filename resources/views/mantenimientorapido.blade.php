@@ -2721,22 +2721,126 @@
         }
 
         function seleccionarProducto(codprod, descrip, referencia) {
-            let cantidad = prompt('Ingrese la cantidad:', '1');
-            if (cantidad === null) return;
+            // Crear un modal personalizado para la cantidad
+            let modalHtml = `
+        <div class="modal fade" id="cantidadModal" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: var(--pastel-purple);">
+                        <h5 class="modal-title">Cantidad</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-3">
+                            <strong>${descrip}</strong>
+                            <br>
+                            <small class="text-muted">Ref: ${referencia || 'N/A'}</small>
+                        </div>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(-1)">-</button>
+                            <input type="number" class="form-control text-center" id="cantidadInput"
+                                   value="1" min="0.01" step="0.01"
+                                   style="font-size: 1.5rem; font-weight: bold;">
+                            <button class="btn btn-outline-secondary" type="button" onclick="cambiarCantidad(1)">+</button>
+                        </div>
+                        <div class="mt-2 text-center">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidadRapida(5)">+5</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidadRapida(10)">+10</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="cambiarCantidadRapida(20)">+20</button>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">* Solo números, use punto para decimales</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn pastel-btn-success" id="btnConfirmarCantidad">
+                            <i class="ri-check-line"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
-            cantidad = parseFloat(cantidad) || 1;
+            // Eliminar modal anterior si existe
+            $('#cantidadModal').remove();
+            $('body').append(modalHtml);
 
-            let producto = {
-                codprod: codprod,
-                descripcion: descrip,
-                referencia: referencia,
-                cantidad: cantidad,
-                tipo: 'producto'
-            };
+            // Variables para almacenar datos del producto
+            window._productoSeleccionado = { codprod, descrip, referencia };
 
-            agregarProductoALista(producto);
-            $('#resultadosProductos').hide();
-            $('#buscadorProducto').val('');
+            // Mostrar modal
+            $('#cantidadModal').modal('show');
+
+            // Enfocar el input después de que el modal se muestre
+            $('#cantidadModal').on('shown.bs.modal', function() {
+                $('#cantidadInput').focus().select();
+            });
+
+            // Evento para confirmar
+            $('#btnConfirmarCantidad').off('click').on('click', function() {
+                let cantidad = $('#cantidadInput').val().trim().replace(',', '.');
+                let numero = parseFloat(cantidad);
+
+                if (isNaN(numero) || numero <= 0) {
+                    alert('⚠️ Ingrese una cantidad válida mayor que 0');
+                    $('#cantidadInput').focus().select();
+                    return;
+                }
+
+                numero = Math.round(numero * 100) / 100;
+
+                let producto = {
+                    codprod: window._productoSeleccionado.codprod,
+                    descripcion: window._productoSeleccionado.descrip,
+                    referencia: window._productoSeleccionado.referencia,
+                    cantidad: numero,
+                    tipo: 'producto'
+                };
+
+                agregarProductoALista(producto);
+                $('#cantidadModal').modal('hide');
+                $('#resultadosProductos').hide();
+                $('#buscadorProducto').val('');
+            });
+
+            // Permitir Enter para confirmar
+            $('#cantidadInput').off('keypress').on('keypress', function(e) {
+                if (e.which == 13) {
+                    e.preventDefault();
+                    $('#btnConfirmarCantidad').click();
+                }
+            });
+
+            // Validar entrada en tiempo real (solo números y punto)
+            $('#cantidadInput').off('input').on('input', function() {
+                let val = $(this).val();
+                // Permitir solo números, punto y coma
+                val = val.replace(/[^0-9.,]/g, '');
+                // Si hay coma, reemplazar por punto
+                val = val.replace(',', '.');
+                $(this).val(val);
+            });
+        }
+
+        // Funciones auxiliares para los botones +/-
+        function cambiarCantidad(valor) {
+            let input = $('#cantidadInput');
+            let actual = parseFloat(input.val()) || 0;
+            let nuevo = actual + valor;
+            if (nuevo < 0.01) nuevo = 0.01;
+            input.val(Math.round(nuevo * 100) / 100);
+            input.focus().select();
+        }
+
+        function cambiarCantidadRapida(valor) {
+            let input = $('#cantidadInput');
+            let actual = parseFloat(input.val()) || 0;
+            let nuevo = actual + valor;
+            if (nuevo < 0.01) nuevo = 0.01;
+            input.val(Math.round(nuevo * 100) / 100);
+            input.focus().select();
         }
 
         function agregarProductoALista(producto) {
