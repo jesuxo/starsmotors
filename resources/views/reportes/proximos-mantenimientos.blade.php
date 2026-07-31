@@ -332,7 +332,7 @@
                                     </td>
                                     <td>
                                         @php
-                                            $telefono = $m->vehiculo->cliente->telef ?? $m->vehiculo->cliente->movil;
+                                            $telefono = $m->vehiculo->cliente->movil ?? $m->vehiculo->cliente->movil;
                                         @endphp
                                         @if($telefono)
                                             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $telefono) }}"

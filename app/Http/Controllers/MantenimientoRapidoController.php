@@ -127,7 +127,7 @@ class MantenimientoRapidoController extends Controller
                 'codclie'  => $vehiculo->cliente->codclie,
                 'nombre'   => $vehiculo->cliente->descrip,
                 'cedula'   => $vehiculo->cliente->id3,
-                'telefono' => $vehiculo->cliente->telef ?? $vehiculo->cliente->movil,
+                'telefono' => $vehiculo->cliente->movil ?? $vehiculo->cliente->movil,
                 'email'    => $vehiculo->cliente->email
             ]
         ];
@@ -184,7 +184,7 @@ class MantenimientoRapidoController extends Controller
                     'codclie'  => $cliente->codclie,
                     'nombre'   => $cliente->descrip,
                     'cedula'   => $cliente->id3,
-                    'telefono' => $cliente->telef ?? $cliente->movil,
+                    'telefono' => $cliente->movil ?? $cliente->movil,
                     'email'    => $cliente->email
                 ]
             ]);
@@ -230,7 +230,7 @@ class MantenimientoRapidoController extends Controller
                 'codclie'  => $cliente->codclie,
                 'nombre'   => $cliente->descrip,
                 'cedula'   => $cliente->id3,
-                'telefono' => $cliente->telef ?? $cliente->movil,
+                'telefono' => $cliente->movil ?? $cliente->movil,
                 'email'    => $cliente->email
             ]
         ]);
@@ -566,7 +566,7 @@ class MantenimientoRapidoController extends Controller
         $urlCliente = route('cliente.mantenimiento.ver', $mantenimiento->token_cliente);
 
         // Obtener número de teléfono del cliente
-        $telefono = $mantenimiento->vehiculo->cliente->telef ??
+        $telefono = $mantenimiento->vehiculo->cliente->movil ??
             $mantenimiento->vehiculo->cliente->movil ?? null;
 
         if (!$telefono) {
@@ -782,7 +782,7 @@ class MantenimientoRapidoController extends Controller
                 'codclie'  => $cliente->codclie,
                 'nombre'   => $cliente->descrip,
                 'cedula'   => $cliente->id3,
-                'telefono' => $cliente->telef ?? $cliente->movil,
+                'telefono' => $cliente->movil ?? $cliente->movil,
                 'email'    => $cliente->email
             ]
         ]);

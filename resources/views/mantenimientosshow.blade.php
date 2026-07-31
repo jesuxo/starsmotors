@@ -570,7 +570,7 @@
                             // Obtener datos del cliente y vehículo desde el mantenimiento
                             const cliente = {
                                 nombre: '{{ addslashes($mantenimiento->vehiculo->cliente->descrip) }}',
-                                telefono: '{{ addslashes($mantenimiento->vehiculo->cliente->telef ?? $mantenimiento->vehiculo->cliente->movil ?? '') }}'
+                                telefono: '{{ addslashes($mantenimiento->vehiculo->cliente->movil ?? $mantenimiento->vehiculo->cliente->movil ?? '') }}'
                             };
 
                             const vehiculo = {
