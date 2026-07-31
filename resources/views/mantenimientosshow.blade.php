@@ -386,7 +386,7 @@
                                             <div class="col-md-6 mb-2">
                                                 <label>Teléfono</label>
                                                 <input type="text" class="form-control form-control-sm" id="editClienteTelefono"
-                                                       value="{{ $mantenimiento->vehiculo->cliente->telef ?? $mantenimiento->vehiculo->cliente->movil ?? '' }}">
+                                                       value="{{ $mantenimiento->vehiculo->cliente->movil ?? $mantenimiento->vehiculo->cliente->movil ?? '' }}">
                                                 <small class="text-muted">Ej: 04121234567</small>
                                             </div>
                                             <div class="col-md-6 mb-2">

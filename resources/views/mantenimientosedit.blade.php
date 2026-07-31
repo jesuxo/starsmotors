@@ -82,7 +82,7 @@
                                     <a href="/clientes/{{$vehiculo->codclie}}/tab1" target="_blank" style=" position: absolute; right: 10px; top: 10px"><i class="ri-edit-line"></i></a>
                                     <p class="mb-1"><strong>{{ $vehiculo->cliente->descrip }}</strong></p>
                                     <p class="mb-1">Cédula: {{ $vehiculo->cliente->id3 }}</p>
-                                    <p class="mb-0">Tel: {{ $vehiculo->cliente->telef ?? $vehiculo->cliente->movil ?? 'N/A' }}</p>
+                                    <p class="mb-0">Tel: {{ $vehiculo->cliente->movil ?? $vehiculo->cliente->movil ?? 'N/A' }}</p>
                                 </div>
                             </div>
                         </div>

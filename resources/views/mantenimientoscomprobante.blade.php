@@ -108,7 +108,7 @@
     </div>
     <div class="info-row">
         <span class="info-label">Teléfono:</span>
-        <span class="info-value">{{ $mantenimiento->cliente->telef ?? $mantenimiento->cliente->movil ?? 'N/A' }}</span>
+        <span class="info-value">{{ $mantenimiento->cliente->movil ?? $mantenimiento->cliente->movil ?? 'N/A' }}</span>
     </div>
 
     <div class="title-section">🚗 DATOS DEL VEHÍCULO</div>

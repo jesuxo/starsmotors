@@ -234,7 +234,7 @@
                     </h1>
                     <p class="mb-0 opacity-75">
                         <i class="ri-mail-line"></i> {{ $mantenimiento->vehiculo->cliente->email ?? 'No registrado' }} |
-                        <i class="ri-phone-line"></i> {{ $mantenimiento->vehiculo->cliente->telef ?? $mantenimiento->vehiculo->cliente->movil ?? 'No registrado' }}
+                        <i class="ri-phone-line"></i> {{ $mantenimiento->vehiculo->cliente->movil ?? $mantenimiento->vehiculo->cliente->movil ?? 'No registrado' }}
                     </p>
                 </div>
                 <div class="col-md-4 text-md-end">
