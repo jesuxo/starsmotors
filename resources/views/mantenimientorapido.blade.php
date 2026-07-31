@@ -2130,7 +2130,7 @@
             console.log('Foto URL:', vehiculo.foto_url);
 
             let cliente = vehiculo.cliente;
-            let telefono = cliente.movil || 'N/A';
+            let telefono = cliente.movil || 'N/A5';
 
             // Mostrar datos del cliente
             $('#clienteData').html(`
@@ -2353,7 +2353,7 @@
                             <div style="background: linear-gradient(135deg, var(--pastel-pink) 0%, #ffe6f0 100%); padding: 15px; border-radius: 12px; border: 2px solid #28a745;">
                                 <p><strong><i class="ri-id-card-line"></i> Cédula:</strong> ${escapeHtml(clienteActual.cedula)}</p>
                                 <p><strong><i class="ri-user-line"></i> Nombre:</strong> ${escapeHtml(clienteActual.nombre)}</p>
-                                <p><strong><i class="ri-phone-line"></i> Teléfono:</strong> ${escapeHtml(clienteActual.telefono || 'N/A')}</p>
+                                <p><strong><i class="ri-phone-line"></i> Teléfono:</strong> ${escapeHtml(clienteActual.telefono || 'N/A4')}</p>
                                 <p><strong><i class="ri-mail-line"></i> Email:</strong> ${escapeHtml(clienteActual.email || 'N/A')}</p>
                             </div>
                         `);
@@ -2509,7 +2509,7 @@
                             <div style="background: var(--pastel-pink); padding: 10px; border-radius: 8px;">
                                 <p><strong><i class="ri-id-card-line"></i> Cédula:</strong> ${response.cliente.cedula}</p>
                                 <p><strong><i class="ri-user-line"></i> Nombre:</strong> ${response.cliente.nombre}</p>
-                                <p><strong><i class="ri-phone-line"></i> Teléfono:</strong> ${response.cliente.telefono || 'N/A'}</p>
+                                <p><strong><i class="ri-phone-line"></i> Teléfono:</strong> ${response.cliente.telefono || 'N/A3'}</p>
                                 <p><strong><i class="ri-mail-line"></i> Email:</strong> ${response.cliente.email || 'N/A'}</p>
                             </div>
                         `);
@@ -3353,7 +3353,7 @@
         }
 
         function actualizarVistaCliente(cliente) {
-            let telefono = cliente.telefono || 'N/A';
+            let telefono = cliente.telefono || 'N/A2';
             if (cliente.telefono && cliente.telefono.includes('-')) {
                 telefono = cliente.telefono;
             }
