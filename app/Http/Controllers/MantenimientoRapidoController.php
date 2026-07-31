@@ -128,6 +128,7 @@ class MantenimientoRapidoController extends Controller
                 'nombre'   => $vehiculo->cliente->descrip,
                 'cedula'   => $vehiculo->cliente->id3,
                 'telefono' => $vehiculo->cliente->movil ?? $vehiculo->cliente->movil,
+                'movil'    => $vehiculo->cliente->movil ?? $vehiculo->cliente->movil,
                 'email'    => $vehiculo->cliente->email
             ]
         ];
@@ -142,6 +143,7 @@ class MantenimientoRapidoController extends Controller
         $vehiculo = CWVehiculo::with(['cliente', 'tipo'])
             ->where('id', $request->vehiculo_id)
             ->first();
+
 
         if ($vehiculo) {
             $ultimos_mantenimientos = CWMantenimiento::with(['productos', 'tipos']) // <-- AGREGAMOS TIPOS
@@ -231,6 +233,7 @@ class MantenimientoRapidoController extends Controller
                 'nombre'   => $cliente->descrip,
                 'cedula'   => $cliente->id3,
                 'telefono' => $cliente->movil ?? $cliente->movil,
+                'movil'    => $cliente->movil ?? $cliente->movil,
                 'email'    => $cliente->email
             ]
         ]);
