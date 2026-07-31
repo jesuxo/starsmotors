@@ -2130,7 +2130,7 @@
             console.log('Foto URL:', vehiculo.foto_url);
 
             let cliente = vehiculo.cliente;
-            let telefono = cliente.telefono || 'N/A';
+            let telefono = cliente.movil || 'N/A';
 
             // Mostrar datos del cliente
             $('#clienteData').html(`
