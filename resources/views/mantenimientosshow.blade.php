@@ -357,7 +357,7 @@
                                         </tr>
                                         <tr>
                                             <td><strong>Teléfono:</strong></td>
-                                            <td id="clienteTelefono">{{ $mantenimiento->vehiculo->cliente->telef ?? $mantenimiento->vehiculo->cliente->movil ?? 'N/A' }}</td>
+                                            <td id="clienteTelefono">{{ $mantenimiento->vehiculo->cliente->telef ?? $mantenimiento->vehiculo->cliente->telef ?? '' }} {{ $mantenimiento->vehiculo->cliente->movil ?? $mantenimiento->vehiculo->cliente->movil ?? '' }}</td>
                                         </tr>
                                         @if($mantenimiento->vehiculo->cliente->email)
                                             <tr>
@@ -620,24 +620,24 @@
                             // Construir mensaje con emojis y formato
                             let mensaje = `¡Hola ${cliente.nombre}!\n\n`;
                             mensaje += `Tu vehículo *${vehiculo.marca} ${vehiculo.modelo}* (${vehiculo.year}) ya fue atendido en nuestro taller! \n\n`;
-                            mensaje += ` *Servicios realizados:*\n${serviciosText}\n\n`;
+                            mensaje += `*Servicios realizados:*\n${serviciosText}\n\n`;
 
                             if (mantenimientoData.kilometraje !== 'No registrado') {
-                                mensaje += ` *Kilometraje actual:* ${mantenimientoData.kilometraje} km\n`;
+                                mensaje += `*Kilometraje actual:* ${mantenimientoData.kilometraje} km\n`;
                             }
 
                             if (mantenimientoData.vendedor !== 'No especificado') {
-                                mensaje += `  *Atendido por:* ${mantenimientoData.vendedor}\n\n`;
+                                mensaje += `*Atendido por:* ${mantenimientoData.vendedor}\n\n`;
                             } else {
                                 mensaje += `\n`;
                             }
 
                             // Agregar observaciones si existen
                             if (mantenimientoData.observaciones) {
-                                mensaje += ` *Observaciones:*\n${mantenimientoData.observaciones}\n\n`;
+                                mensaje += `*Observaciones:*\n${mantenimientoData.observaciones}\n\n`;
                             }
 
-                            mensaje += ` *Ver detalles completos, fotos y próximos mantenimientos aquí:*\n`;
+                            mensaje += `*Ver detalles completos, fotos y próximos mantenimientos aquí:*\n`;
                             mensaje += `${url}\n\n`;
                             mensaje += `¡Gracias por confiar en nosotros!  `;
 
