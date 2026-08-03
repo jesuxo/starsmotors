@@ -172,7 +172,7 @@
                         @foreach($mantenimiento->productos as $p)
                             <tr>
                                 <td>{{ $p->descripcion }}</td>
-                                <td class="text-center">{{ $p->cantidad }}</td>
+                                <td class="text-center">{{ $p->cantidad+0 }}</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -205,7 +205,7 @@
                             $tipoTexto = $tipos[$foto->tipo_evidencia] ?? ucfirst($foto->tipo_evidencia);
 
                             // Construir la URL correctamente
-                            $urlFoto =  "/storage/public/".$foto->ruta_foto;
+                            $urlFoto =   $foto->ruta_foto;
                         @endphp
 
                         <div class="foto-thumbnail"
@@ -276,6 +276,10 @@
 
     <!-- Botones de acción -->
     <div class="d-flex gap-2 mt-3">
+        <a href="{{ route('clientes.vehiculos.mantenimientos.show', [$mantenimiento->codclie, $mantenimiento->fk_vehiculo, $mantenimiento->id]) }}"
+           class="btn btn-info btn-lg">
+            <i class="ri-eye-line"></i> Ver Detalle
+        </a>
         <a href="{{ route('clientes.vehiculos.mantenimientos.edit', [$mantenimiento->codclie, $mantenimiento->fk_vehiculo, $mantenimiento->id]) }}"
            class="btn btn-success flex-fill">
             <i class="ri-edit-line"></i> Editar completo
