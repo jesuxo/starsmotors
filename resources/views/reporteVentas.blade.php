@@ -202,11 +202,11 @@
                                             $totalcant       += $listavend['cant'];
                                             $tprecioventa    += $listavend['precioventa'];
                                             $tbasesuma       += $listavend['basesuma'];
-                                            $costoxcantidad  += $listavend['preciodpro'];
+                                            $costoxcantidad  += $listavend['preciodp'];
                                             $restaxcantidad  += $listavend['resta'];
                                             $utilidad         = 0;
-                                            if($listavend['preciodpro'] != 0 and $listavend['preciodpro']  >0 )
-                                                $utilidad = $listavend['resta'] / $listavend['preciodpro'];
+                                            if($listavend['preciod'] != 0 and $listavend['preciod']  >0 )
+                                                $utilidad = $listavend['resta'] / $listavend['preciod'];
 
                                             $sumautilidad  += $utilidad*100
 
