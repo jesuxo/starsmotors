@@ -205,7 +205,7 @@
                             $tipoTexto = $tipos[$foto->tipo_evidencia] ?? ucfirst($foto->tipo_evidencia);
 
                             // Construir la URL correctamente
-                            $urlFoto =   $foto->ruta_foto;
+                            $urlFoto =  "/".$foto->ruta_foto;
                         @endphp
 
                         <div class="foto-thumbnail"
