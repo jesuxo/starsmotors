@@ -368,6 +368,8 @@ class HomeController extends Controller
     {
         $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
         $arraysucursales = implode(",",$arraysucursales);
+        if(!$arraysucursales)
+            return redirect()->route('login');
 
         $comercialid = session('comercialid');
         if(!$comercialid) {
@@ -625,6 +627,8 @@ class HomeController extends Controller
     {
         $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
         $arraysucursales = implode(",",$arraysucursales);
+        if(!$arraysucursales)
+            return redirect()->route('login');
 
         $comercialid = session('comercialid');
         if(!$comercialid) {
@@ -1377,6 +1381,9 @@ class HomeController extends Controller
     {
         $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
         $arraysucursales = implode(",",$arraysucursales);
+
+        if(!$arraysucursales)
+            return redirect()->route('login');
 
         $comercialid = session('comercialid');
         if(!$comercialid) {

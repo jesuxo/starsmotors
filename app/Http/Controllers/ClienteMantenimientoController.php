@@ -45,14 +45,6 @@ class ClienteMantenimientoController extends Controller
             ->where('id', '!=', $mantenimiento->fk_vehiculo)
             ->get();
 
-        // Registrar acceso para estadísticas (opcional)
-        Log::info('Cliente accedió a mantenimiento', [
-            'token' => $token,
-            'mantenimiento_id' => $mantenimiento->id,
-            'ip' => request()->ip(),
-            'user_agent' => request()->userAgent()
-        ]);
-
         return view('cliente.mantenimiento-ver', compact('mantenimiento', 'historial', 'otrosVehiculos'));
     }
 

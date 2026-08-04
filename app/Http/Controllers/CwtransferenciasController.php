@@ -31,6 +31,9 @@ class CwtransferenciasController extends Controller
     {
         $arraysucursales = auth()->user()->sucursales->pluck('fk_sucursal')->toArray();
 
+        if(!$arraysucursales)
+            return redirect()->route('login');
+
         $comercialid = session('comercialid');
         if(!$comercialid) {
             session(['comercialid' => 1]);
@@ -202,6 +205,9 @@ class CwtransferenciasController extends Controller
     public function create()
     {
         $arraysucursales = auth()->user()->sucursales->pluck('fk_sucursal')->toArray();
+        if(!$arraysucursales)
+            return redirect()->route('login');
+
         $sucursales = Sasucursal::whereIn('id', $arraysucursales)->orderBy('descrip','asc')->get();
         return view('transferencias-create', compact('sucursales') );
     }
