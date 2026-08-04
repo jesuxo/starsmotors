@@ -861,8 +861,6 @@ class MantenimientoRapidoController extends Controller
             if ($exif && isset($exif['Orientation'])) {
                 $orientation = $exif['Orientation'];
 
-                // Log para debug
-                Log::info('Orientación EXIF detectada: ' . $orientation . ' para archivo: ' . basename($rutaOriginal));
 
                 switch ($orientation) {
                     case 3:
@@ -910,8 +908,6 @@ class MantenimientoRapidoController extends Controller
             if ($exif && isset($exif['Orientation'])) {
                 $orientation = $exif['Orientation'];
 
-                // Log para debug
-                Log::info('Orientación EXIF detectada: ' . $orientation . ' para archivo: ' . basename($rutaOriginal));
 
                 switch ($orientation) {
                     case 3:
