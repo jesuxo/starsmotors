@@ -23,6 +23,11 @@ class Saacxc extends Model
             ->where('sasucursal.fk_comercial', $comercial);
     }
 
+    public function sucursalcli  (){
+        return $this->belongsTo(Sasucursal::class, 'fk_sucursal', 'id');
+    }
+
+
     public function cliente  (){
         return $this->belongsTo(Saclie::class, 'CodClie', 'codclie');
     }
