@@ -85,6 +85,7 @@
             top: 21px !important;
             transform: translateY(-50%);
             color: #9ca3af;
+            width: 20px !important;
         }
 
         .resultados-busqueda {
