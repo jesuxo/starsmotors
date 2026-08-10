@@ -89,6 +89,7 @@
 
         .resultados-busqueda {
             max-height: 500px;
+            width: 100%!important;
             overflow-y: auto;
         }
 
