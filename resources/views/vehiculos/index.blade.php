@@ -82,6 +82,7 @@
             position: absolute;
             top: 50%;
             right: 15px;
+            top: 21px !important;
             transform: translateY(-50%);
             color: #9ca3af;
         }
@@ -90,6 +91,7 @@
             max-height: 500px;
             overflow-y: auto;
         }
+
 
         .loading-overlay {
             position: fixed;
