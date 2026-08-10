@@ -10,8 +10,10 @@ use App\Helpers\VehiculoFotoHelper;
 class CWVehiculo extends Model
 {
     use HasFactory;
-    protected $table    = 'cwvehiculo';
-    protected $fillable = ['codclie', 'fk_tipo', 'modelo', 'marca', 'identificacion',
+    protected $table = 'cwvehiculo';
+    protected $primaryKey = 'id';
+    public $timestamps    = true;
+    protected $fillable   = ['codclie', 'fk_tipo', 'modelo', 'marca', 'identificacion',
         'year', 'observaciones', 'serialchasis', 'serialmotor', 'foto_vehiculo'];
 
     public function cliente  (){
@@ -27,6 +29,25 @@ class CWVehiculo extends Model
         return Carbon::parse($this->attributes['created_at'])->format('d/m/Y');
     }
 
+    public function getMantenimientosCountAttribute()
+    {
+        return $this->mantenimientos()->count();
+    }
+
+    // Scope para búsqueda por placa
+    public function scopePlaca($query, $placa)
+    {
+        return $query->where('identificacion', 'LIKE', "%{$placa}%");
+    }
+
+    // Scope para búsqueda por cliente (nombre o cédula)
+    public function scopeCliente($query, $busqueda)
+    {
+        return $query->whereHas('cliente', function($q) use ($busqueda) {
+            $q->where('descrip', 'LIKE', "%{$busqueda}%")
+                ->orWhere('id3', 'LIKE', "%{$busqueda}%");
+        });
+    }
 
     // NUEVAS RELACIONES
     public function mantenimientos()

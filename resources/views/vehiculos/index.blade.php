@@ -4,9 +4,18 @@
 @endsection
 @section('css')
     <style>
+        :root {
+            --pastel-blue: #e6f3ff;
+            --pastel-green: #e1f7e6;
+            --pastel-yellow: #fff9e6;
+            --pastel-pink: #ffe6f0;
+            --pastel-purple: #f0e6ff;
+        }
+
         .btn-soft-light:hover, .vehiculoselected {
             background-color: #e0f2ff !important;
         }
+
         .nav-pills .nav-link {
             background: #eee !important;
             border-bottom-right-radius: 0 !important;
@@ -17,9 +26,10 @@
             border-bottom-right-radius: 0 !important;
             border-bottom-left-radius: 0 !important;
         }
-        .nav-pills{
+        .nav-pills {
             border-bottom: 1px solid #0072c5;
         }
+
         .tdline{
             border:1px solid #0072c5 !important;
             font-size: 12px;
@@ -30,6 +40,7 @@
             color: white !important;
             background-color: #0072c5 !important;
         }
+
         .error {
             border: 2px solid red !important;
             background-color: #ffe6e6;
@@ -44,6 +55,7 @@
         .vehiculo-item {
             transition: all 0.2s;
             border-left: 4px solid transparent;
+            cursor: pointer;
         }
         .vehiculo-item:hover {
             background-color: #e0f2ff !important;
@@ -62,6 +74,44 @@
             font-size: 0.75rem;
         }
 
+        .search-box {
+            position: relative;
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .resultados-busqueda {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
         .foto-thumb {
             width: 80px;
             height: 80px;
@@ -77,7 +127,14 @@
         }
     </style>
 @endsection
+
 @section('content')
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+    </div>
 
     <div class="row">
         @if(Auth::user() and auth()->user()->type == 'admin')
@@ -90,22 +147,27 @@
                         </h6>
                     </div>
                     <div class="card-body">
+                        {{-- CAMBIADO: route('vehiculos.index') --}}
                         <form action="{{ route('vehiculos.index') }}" method="GET"
                               autocomplete="off" class="needs-validation" id="vehiculoForm">
-                            <input type="hidden" id="vehiculo_id" name="vehiculo_id" value="">
+                            <input type="hidden" id="vehiculo_id" name="vehiculo_id" value="{{ $vehiculo_id ?? '' }}">
                             <div class="row">
                                 <div class="col-xxl-12">
                                     <div class="search-box mb-3">
                                         <input type="text" class="form-control search" id="busqueda" name="busqueda"
                                                value="{{ $busqueda }}" required
-                                               placeholder="Buscar por placa, marca, modelo, cliente...">
+                                               placeholder="Buscar por placa, cédula, nombre, marca o modelo...">
                                         <i class="ri-search-line search-icon"></i>
                                     </div>
                                     <div class="invalid-feedback">Ingrese un criterio de búsqueda</div>
+                                    <small class="text-muted">
+                                        <i class="ri-information-line"></i>
+                                        Ej: "ABC123", "V-12345678", "Juan Pérez", "Toyota"
+                                    </small>
                                 </div>
 
-                                <div class="col-xxl-12 col-lg-6">
-                                    @if($busqueda != '')
+                                @if($busqueda != '')
+                                    <div class="col-xxl-12 col-lg-6 mt-3">
                                         <div class="accordion accordion-flush filter-accordion">
                                             <div class="card-body border-bottom p-0">
                                                 <div>
@@ -113,35 +175,59 @@
                                                         Resultados para: <strong>{{ $busqueda }}</strong>
                                                         <span class="badge bg-info float-end">{{ $vehiculos->count() }} encontrado(s)</span>
                                                     </p>
-                                                    @forelse($vehiculos as $v)
-                                                        <a href="javascript:;"
-                                                           onclick="seleccionarVehiculo({{ $v->id }})"
-                                                           class="card btn btn-soft-light card-animate d-flex p-2 vehiculo-item
-                                                           {{ isset($vehiculo) && $vehiculo->id == $v->id ? 'seleccionado' : '' }}
-                                                           border-bottom border-bottom-dashed cursor-pointer"
-                                                           style="text-align: left">
-                                                            <div class="flex-grow-1">
-                                                                <h5 class="mb-1">{{ $v->marca }} {{ $v->modelo }}</h5>
-                                                                <p class="text-muted mb-1 small">
-                                                                    <i class="ri-road-map-line"></i> {{ $v->identificacion }}
-                                                                    @if($v->year)
-                                                                        | <i class="ri-calendar-line"></i> {{ $v->year }}
-                                                                    @endif
-                                                                </p>
-                                                                <p class="text-muted mb-0 small">
-                                                                    <i class="ri-user-line"></i> {{ $v->cliente->descrip ?? 'Sin cliente' }}
-                                                                    <span class="badge-tipo ms-2">{{ $v->tipo->tipo ?? 'N/A' }}</span>
-                                                                </p>
+                                                    <div class="resultados-busqueda">
+                                                        @forelse($vehiculos as $v)
+                                                            <a href="javascript:;"
+                                                               onclick="seleccionarVehiculo({{ $v->id }})"
+                                                               class="card btn btn-soft-light card-animate d-flex p-2 vehiculo-item
+                                                               {{ isset($vehiculo) && $vehiculo->id == $v->id ? 'seleccionado' : '' }}
+                                                               border-bottom border-bottom-dashed cursor-pointer"
+                                                               style="text-align: left">
+                                                                <div class="flex-grow-1">
+                                                                    <h5 class="mb-1">{{ $v->marca }} {{ $v->modelo }}</h5>
+                                                                    <p class="text-muted mb-1 small">
+                                                                        <i class="ri-road-map-line"></i>
+                                                                        <span class="badge bg-primary">{{ $v->identificacion }}</span>
+                                                                        @if($v->year)
+                                                                            | <i class="ri-calendar-line"></i> {{ $v->year }}
+                                                                        @endif
+                                                                    </p>
+                                                                    <p class="text-muted mb-0 small">
+                                                                        <i class="ri-user-line"></i>
+                                                                        <strong>{{ $v->cliente->descrip ?? 'Sin cliente' }}</strong>
+                                                                        @if($v->cliente)
+                                                                            ({{ $v->cliente->id3 ?? 'N/A' }})
+                                                                        @endif
+                                                                        <span class="badge-tipo ms-2">{{ $v->tipo->tipo ?? 'N/A' }}</span>
+                                                                    </p>
+                                                                    <div class="mt-1">
+                                                                        <small class="text-muted">
+                                                                            <i class="ri-tools-line"></i>
+                                                                            {{ $v->mantenimientos_count ?? 0 }} mantenimientos
+                                                                        </small>
+                                                                    </div>
+                                                                </div>
+                                                                @if($v->foto_vehiculo)
+                                                                    <div class="flex-shrink-0 ms-2">
+                                                                        <img src="/vehiculos/{{ $v->foto_vehiculo }}"
+                                                                             class="foto-thumb" alt="Vehículo"
+                                                                             onerror="this.style.display='none'">
+                                                                    </div>
+                                                                @endif
+                                                            </a>
+                                                        @empty
+                                                            <div class="text-center p-4">
+                                                                <i class="ri-emotion-sad-line" style="font-size: 3rem; color: #ccc;"></i>
+                                                                <p class="mt-2">No se encontraron vehículos</p>
+                                                                <small class="text-muted">Intenta con otro criterio de búsqueda</small>
                                                             </div>
-                                                        </a>
-                                                    @empty
-                                                        <p class="text-muted text-center py-3">No se encontraron vehículos</p>
-                                                    @endforelse
+                                                        @endforelse
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    @endif
-                                </div>
+                                    </div>
+                                @endif
                             </div>
                         </form>
                     </div>
@@ -158,7 +244,7 @@
             @if(isset($vehiculo))
                 <div class="card">
                     <div class="card-header">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center flex-wrap gap-2">
                             <h5 class="card-title mb-0 flex-grow-1">
                                 {{ $vehiculo->marca }} {{ $vehiculo->modelo }}
                                 <small class="text-muted fs-6">({{ $vehiculo->identificacion }})</small>
@@ -176,24 +262,28 @@
                         <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
                             <ul class="nav nav-pills flex-grow-1 mb-0" role="tablist">
                                 <li class="nav-item">
+                                    {{-- CAMBIADO: route('vehiculos.index') --}}
                                     <a class="nav-link {{ $tab == 'tab1' ? 'active' : '' }}"
                                        href="{{ route('vehiculos.index', ['vehiculo_id' => $vehiculo->id, 'tab' => 'tab1', 'busqueda' => $busqueda]) }}"
                                        role="tab">
-                                        Información General
+                                        <i class="ri-information-line"></i> Información General
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    {{-- CAMBIADO: route('vehiculos.index') --}}
                                     <a class="nav-link {{ $tab == 'tab2' ? 'active' : '' }}"
                                        href="{{ route('vehiculos.index', ['vehiculo_id' => $vehiculo->id, 'tab' => 'tab2', 'busqueda' => $busqueda]) }}"
                                        role="tab">
-                                        Mantenimientos
+                                        <i class="ri-list-check"></i> Mantenimientos
+                                        <span class="badge bg-light text-dark ms-1">{{ $mantenimientos->count() }}</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
+                                    {{-- CAMBIADO: route('vehiculos.index') --}}
                                     <a class="nav-link {{ $tab == 'tab3' ? 'active' : '' }}"
                                        href="{{ route('vehiculos.index', ['vehiculo_id' => $vehiculo->id, 'tab' => 'tab3', 'busqueda' => $busqueda]) }}"
                                        role="tab">
-                                        Historial Completo
+                                        <i class="ri-history-line"></i> Historial Completo
                                     </a>
                                 </li>
                             </ul>
@@ -208,9 +298,8 @@
                             </div>
                         </div>
 
-                        <!-- Contenido de las pestañas (mantén el mismo código que tenías) -->
+                        <!-- Contenido de las pestañas -->
                         <div class="tab-content">
-                            {{-- Aquí va el contenido de las pestañas que ya tenías --}}
                             @include('vehiculos.partials.tablas')
                         </div>
                     </div>
@@ -221,13 +310,16 @@
                         <i class="ri-car-line" style="font-size: 4rem; color: #ccc;"></i>
                         <h5 class="mt-3">No se encontraron vehículos</h5>
                         <p class="text-muted">Intenta con otro criterio de búsqueda</p>
+                        <button class="btn btn-primary" onclick="$('#busqueda').focus()">
+                            <i class="ri-search-line"></i> Nueva Búsqueda
+                        </button>
                     </div>
                 </div>
             @endif
         </div>
     </div>
 
-    <!-- Modal para editar vehículo (igual que antes) -->
+    <!-- Modal para editar vehículo -->
     @include('vehiculos.partials.modal-editar')
 
 @endsection
@@ -280,15 +372,21 @@
         });
 
         function seleccionarVehiculo(id) {
+            $('#loadingOverlay').fadeIn();
             $('#vehiculo_id').val(id);
             $('#vehiculoForm').submit();
         }
 
         function editarVehiculo(id) {
+            $('#loadingOverlay').fadeIn();
+
+            {{-- CAMBIADO: route('vehiculos.detalles') --}}
             $.ajax({
-                url: '/vehiculos/' + id + '/detalles',
+                url: '{{ route("vehiculos.detalles", "") }}/' + id,
                 method: 'GET',
                 success: function(response) {
+                    $('#loadingOverlay').fadeOut();
+
                     if (response.success) {
                         let v = response.vehiculo;
                         $('#edit_fk_tipo').val(v.fk_tipo);
@@ -300,9 +398,14 @@
                         $('#edit_serialchasis').val(v.serialchasis);
                         $('#edit_observaciones').val(v.observaciones);
 
-                        $('#formEditarVehiculo').attr('action', '/vehiculos/' + id);
+                        {{-- CAMBIADO: route('vehiculos.update') --}}
+                        $('#formEditarVehiculo').attr('action', '{{ route("vehiculos.update", "") }}/' + id);
                         $('#editarVehiculoModal').modal('show');
                     }
+                },
+                error: function() {
+                    $('#loadingOverlay').fadeOut();
+                    alert('Error al cargar los datos del vehículo');
                 }
             });
         }

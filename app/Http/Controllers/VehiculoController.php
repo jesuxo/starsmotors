@@ -23,20 +23,28 @@ class VehiculoController extends Controller
         $vehiculo = null;
         $mantenimientos = collect();
 
-        // Estadísticas de vehículos (últimos 6 meses)
+        // Estadísticas de vehículos
         $estadisticas = $this->obtenerEstadisticas();
 
         // Buscar vehículos si hay criterio de búsqueda
         if (!empty($busqueda)) {
             $vehiculos = CWVehiculo::with(['cliente', 'tipo'])
-                ->where('identificacion', 'LIKE', '%' . $busqueda . '%')
-                ->orWhere('marca', 'LIKE', '%' . $busqueda . '%')
-                ->orWhere('modelo', 'LIKE', '%' . $busqueda . '%')
-                ->orWhere('serialmotor', 'LIKE', '%' . $busqueda . '%')
-                ->orWhere('serialchasis', 'LIKE', '%' . $busqueda . '%')
-                ->orWhereHas('cliente', function($q) use ($busqueda) {
-                    $q->where('descrip', 'LIKE', '%' . $busqueda . '%')
-                        ->orWhere('id3', 'LIKE', '%' . $busqueda . '%');
+                ->where(function($q) use ($busqueda) {
+                    // Búsqueda por placa/identificación
+                    $q->where('identificacion', 'LIKE', '%' . $busqueda . '%')
+                        // Búsqueda por marca o modelo
+                        ->orWhere('marca', 'LIKE', '%' . $busqueda . '%')
+                        ->orWhere('modelo', 'LIKE', '%' . $busqueda . '%')
+                        // Búsqueda por seriales
+                        ->orWhere('serialmotor', 'LIKE', '%' . $busqueda . '%')
+                        ->orWhere('serialchasis', 'LIKE', '%' . $busqueda . '%')
+                        // Búsqueda por cliente (nombre o cédula)
+                        ->orWhereHas('cliente', function($q2) use ($busqueda) {
+                            $q2->where('descrip', 'LIKE', '%' . $busqueda . '%')
+                                ->orWhere('id3', 'LIKE', '%' . $busqueda . '%')  // Cédula/RIF
+                                ->orWhere('telef', 'LIKE', '%' . $busqueda . '%')
+                                ->orWhere('movil', 'LIKE', '%' . $busqueda . '%');
+                        });
                 })
                 ->orderBy('marca')
                 ->orderBy('modelo')
@@ -46,9 +54,15 @@ class VehiculoController extends Controller
 
         // Si se seleccionó un vehículo específico
         if (!empty($vehiculo_id)) {
-            $vehiculo = CWVehiculo::with(['cliente', 'tipo', 'mantenimientos' => function($q) {
-                $q->orderBy('fecha_mantenimiento', 'desc');
-            }])->find($vehiculo_id);
+            $vehiculo = CWVehiculo::with([
+                'cliente',
+                'tipo',
+                'mantenimientos' => function($q) {
+                    $q->orderBy('fecha_mantenimiento', 'desc');
+                },
+                'mantenimientos.productos',  // Cargar productos de los mantenimientos
+                'mantenimientos.fotos'       // Cargar fotos de los mantenimientos
+            ])->find($vehiculo_id);
 
             if ($vehiculo) {
                 $mantenimientos = $vehiculo->mantenimientos;
@@ -206,9 +220,14 @@ class VehiculoController extends Controller
 
     public function getDetalles($id)
     {
-        $vehiculo = CWVehiculo::with(['cliente', 'tipo', 'mantenimientos' => function($q) {
-            $q->orderBy('fecha_mantenimiento', 'desc')->limit(5);
-        }])->findOrFail($id);
+        $vehiculo = CWVehiculo::with([
+            'cliente',
+            'tipo',
+            'mantenimientos' => function($q) {
+                $q->orderBy('fecha_mantenimiento', 'desc')->limit(5);
+            },
+            'mantenimientos.productos'
+        ])->findOrFail($id);
 
         return response()->json([
             'success' => true,

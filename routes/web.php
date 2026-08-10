@@ -25,6 +25,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/vehiculos/{filename}', function ($filename) {
+    $path = storage_path('app/public/vehiculos/' . $filename);
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
+})->where('filename', '.*\.(jpg|jpeg|png|gif|webp|svg)$');
+
 /* Auth Route::get('signup', 'App\Http\Controllers\Auth\RegisterController@signup')->name('signup');*/
 
 Route::get('turno/sucursal/{sucursal?}', 'App\Http\Controllers\Auth\RegisterController@signup')->name('signup');
@@ -118,11 +126,12 @@ Route::middleware(['check.admin'])->group(function () {
     Route::post('/mantenimientos/diario/cambiar-fecha'        , [App\Http\Controllers\MantenimientoDiarioController::class, 'cambiarFecha'])->name('mantenimientos.diario.cambiar-fecha');
 
 
-    Route::get('/vehiculos', [VehiculoController::class, 'index'])->name('vehiculos.index');
-    Route::post('/vehiculos', [VehiculoController::class, 'store'])->name('vehiculos.store');
-    Route::put('/vehiculos/{id}', [VehiculoController::class, 'update'])->name('vehiculos.update');
-    Route::delete('/vehiculos/{id}', [VehiculoController::class, 'destroy'])->name('vehiculos.destroy');
-    Route::get('/vehiculos/{id}/detalles', [VehiculoController::class, 'getDetalles'])->name('vehiculos.detalles');
+
+    Route::get('/gestion-vehiculos', [VehiculoController::class, 'index'])->name('vehiculos.index');
+    Route::post('/gestion-vehiculos', [VehiculoController::class, 'store'])->name('vehiculos.store');
+    Route::put('/gestion-vehiculos/{id}', [VehiculoController::class, 'update'])->name('vehiculos.update');
+    Route::delete('/gestion-vehiculos/{id}', [VehiculoController::class, 'destroy'])->name('vehiculos.destroy');
+    Route::get('/gestion-vehiculos/{id}/detalles', [VehiculoController::class, 'getDetalles'])->name('vehiculos.detalles');
 
 
     Route::get('/clientes/{codclie}/vehiculos/{vehiculo}/mantenimientos',
