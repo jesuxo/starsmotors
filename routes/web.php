@@ -133,6 +133,9 @@ Route::middleware(['check.admin'])->group(function () {
     Route::delete('/gestion-vehiculos/{id}', [VehiculoController::class, 'destroy'])->name('vehiculos.destroy');
     Route::get('/gestion-vehiculos/{id}/detalles', [VehiculoController::class, 'getDetalles'])->name('vehiculos.detalles');
 
+    Route::get('/gestion-vehiculos/cliente/{codclie}', [VehiculoController::class, 'vehiculosPorCliente'])
+        ->name('vehiculos.por-cliente');
+
 
     Route::get('/clientes/{codclie}/vehiculos/{vehiculo}/mantenimientos',
         [\App\Http\Controllers\CWMantenimientoController::class, 'index'])->name('clientes.vehiculos.mantenimientos');

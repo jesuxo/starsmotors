@@ -41,7 +41,8 @@ class VehiculoController extends Controller
                         // Búsqueda por cliente (nombre o cédula)
                         ->orWhereHas('cliente', function($q2) use ($busqueda) {
                             $q2->where('descrip', 'LIKE', '%' . $busqueda . '%')
-                                ->orWhere('id3', 'LIKE', '%' . $busqueda . '%')  // Cédula/RIF
+                                ->orWhere('id3', 'LIKE', '%' . $busqueda . '%')
+                                ->orWhere('codclie', 'LIKE', '%' . $busqueda . '%')
                                 ->orWhere('telef', 'LIKE', '%' . $busqueda . '%')
                                 ->orWhere('movil', 'LIKE', '%' . $busqueda . '%');
                         });
@@ -60,8 +61,8 @@ class VehiculoController extends Controller
                 'mantenimientos' => function($q) {
                     $q->orderBy('fecha_mantenimiento', 'desc');
                 },
-                'mantenimientos.productos',  // Cargar productos de los mantenimientos
-                'mantenimientos.fotos'       // Cargar fotos de los mantenimientos
+                'mantenimientos.productos',
+                'mantenimientos.fotos'
             ])->find($vehiculo_id);
 
             if ($vehiculo) {
@@ -81,6 +82,58 @@ class VehiculoController extends Controller
             'tab',
             'totalVehiculos',
             'estadisticas'
+        ));
+    }
+
+    /**
+     * Nueva función: Ver vehículos de un cliente específico
+     */
+    public function vehiculosPorCliente($codclie)
+    {
+        // Obtener el cliente
+        $cliente = Saclie::where('codclie', $codclie)->first();
+
+        if (!$cliente) {
+            return redirect()->route('vehiculos.index')
+                ->with('error', 'Cliente no encontrado');
+        }
+
+        // Buscar vehículos del cliente
+        $vehiculos = CWVehiculo::with(['cliente', 'tipo'])
+            ->where('codclie', $codclie)
+            ->orderBy('marca')
+            ->orderBy('modelo')
+            ->get();
+
+        // Estadísticas del cliente
+        $estadisticas = $this->obtenerEstadisticas();
+        $tipos = CWTipoVehiculo::orderBy('tipo')->get();
+        $totalVehiculos = CWVehiculo::count();
+        $busqueda = $codclie; // Para mostrar en el buscador
+        $vehiculo_id = null;
+        $vehiculo = null;
+        $mantenimientos = collect();
+        $tab = 'tab1';
+
+        // Si solo tiene un vehículo, seleccionarlo automáticamente
+        if ($vehiculos->count() == 1) {
+            $vehiculo = $vehiculos->first();
+            $vehiculo_id = $vehiculo->id;
+            $mantenimientos = $vehiculo->mantenimientos;
+        }
+
+        // Si tiene varios vehículos, mostrar la lista
+        return view('vehiculos.index', compact(
+            'busqueda',
+            'vehiculos',
+            'vehiculo',
+            'mantenimientos',
+            'tipos',
+            'tab',
+            'totalVehiculos',
+            'estadisticas',
+            'vehiculo_id',
+            'cliente'  // Pasamos el cliente a la vista
         ));
     }
 
@@ -112,13 +165,11 @@ class VehiculoController extends Controller
             $hoy->copy()->endOfMonth()
         ])->count();
 
-        // Variación porcentual
         $variacion = 0;
         if ($totalUltimoMes > 0) {
             $variacion = round((($totalMesActual - $totalUltimoMes) / $totalUltimoMes) * 100, 1);
         }
 
-        // Vehículos por tipo
         $porTipo = CWTipoVehiculo::withCount('vehiculos')
             ->orderBy('vehiculos_count', 'desc')
             ->get()
@@ -129,7 +180,6 @@ class VehiculoController extends Controller
                 ];
             });
 
-        // Marcas más comunes
         $topMarcas = CWVehiculo::select('marca', DB::raw('count(*) as total'))
             ->whereNotNull('marca')
             ->where('marca', '!=', '')
@@ -206,7 +256,6 @@ class VehiculoController extends Controller
     {
         $vehiculo = CWVehiculo::findOrFail($id);
 
-        // Verificar si tiene mantenimientos
         if ($vehiculo->mantenimientos()->count() > 0) {
             return redirect()->route('vehiculos.index')
                 ->with('error', 'No se puede eliminar el vehículo porque tiene mantenimientos asociados');
