@@ -125,8 +125,30 @@
             transform: scale(1.05);
             transition: all 0.2s;
         }
-        .search-box .search-icon{
-            top: 21px !important;
+
+        /* Estilos para la tarjeta de cliente */
+        .cliente-info-card {
+            background: var(--pastel-blue);
+            border-left: 4px solid #0072c5;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cliente-info-card .btn-limpiar {
+            transition: all 0.2s;
+        }
+        .cliente-info-card .btn-limpiar:hover {
+            transform: scale(1.05);
         }
     </style>
 @endsection
@@ -150,7 +172,6 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        {{-- CAMBIADO: route('vehiculos.index') --}}
                         <form action="{{ route('vehiculos.index') }}" method="GET"
                               autocomplete="off" class="needs-validation" id="vehiculoForm">
                             <input type="hidden" id="vehiculo_id" name="vehiculo_id" value="{{ $vehiculo_id ?? '' }}">
@@ -244,6 +265,35 @@
                 @include('vehiculos.partials.estadisticas')
             @endif
 
+            {{-- NUEVO: Mostrar información del cliente cuando se busca por código de cliente --}}
+            @if(isset($cliente) && !isset($vehiculo))
+                <div class="col-12 mb-3">
+                    <div class="card cliente-info-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                <div>
+                                    <h5 class="mb-1">
+                                        <i class="ri-user-line"></i>
+                                        Vehículos de: <strong>{{ $cliente->descrip }}</strong>
+                                    </h5>
+                                    <p class="mb-0 text-muted">
+                                        <i class="ri-barcode-line"></i> Código: {{ $cliente->codclie }} |
+                                        <i class="ri-id-card-line"></i> Cédula/RIF: {{ $cliente->id3 }} |
+                                        <i class="ri-phone-line"></i> Teléfono: {{ $cliente->movil ?? $cliente->telef ?? 'N/A' }}
+                                    </p>
+                                </div>
+                                <div class="mt-2 mt-sm-0">
+                                    <span class="badge bg-primary me-2">{{ $vehiculos->count() }} vehículo(s)</span>
+                                    <a href="{{ route('vehiculos.index') }}" class="btn btn-sm btn-secondary btn-limpiar">
+                                        <i class="ri-close-line"></i> Limpiar filtro
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if(isset($vehiculo))
                 <div class="card">
                     <div class="card-header">
@@ -265,7 +315,6 @@
                         <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
                             <ul class="nav nav-pills flex-grow-1 mb-0" role="tablist">
                                 <li class="nav-item">
-                                    {{-- CAMBIADO: route('vehiculos.index') --}}
                                     <a class="nav-link {{ $tab == 'tab1' ? 'active' : '' }}"
                                        href="{{ route('vehiculos.index', ['vehiculo_id' => $vehiculo->id, 'tab' => 'tab1', 'busqueda' => $busqueda]) }}"
                                        role="tab">
@@ -273,7 +322,6 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    {{-- CAMBIADO: route('vehiculos.index') --}}
                                     <a class="nav-link {{ $tab == 'tab2' ? 'active' : '' }}"
                                        href="{{ route('vehiculos.index', ['vehiculo_id' => $vehiculo->id, 'tab' => 'tab2', 'busqueda' => $busqueda]) }}"
                                        role="tab">
@@ -282,7 +330,6 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    {{-- CAMBIADO: route('vehiculos.index') --}}
                                     <a class="nav-link {{ $tab == 'tab3' ? 'active' : '' }}"
                                        href="{{ route('vehiculos.index', ['vehiculo_id' => $vehiculo->id, 'tab' => 'tab3', 'busqueda' => $busqueda]) }}"
                                        role="tab">
@@ -383,7 +430,6 @@
         function editarVehiculo(id) {
             $('#loadingOverlay').fadeIn();
 
-            {{-- CAMBIADO: route('vehiculos.detalles') --}}
             $.ajax({
                 url: '{{ route("vehiculos.detalles", "") }}/' + id,
                 method: 'GET',
@@ -401,7 +447,6 @@
                         $('#edit_serialchasis').val(v.serialchasis);
                         $('#edit_observaciones').val(v.observaciones);
 
-                        {{-- CAMBIADO: route('vehiculos.update') --}}
                         $('#formEditarVehiculo').attr('action', '{{ route("vehiculos.update", "") }}/' + id);
                         $('#editarVehiculoModal').modal('show');
                     }
