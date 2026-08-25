@@ -158,9 +158,9 @@ class ReporteProximosMantenimientosController extends Controller
             : 'próximamente';
 
         $mensaje = "Hola! Te recordamos que el próximo mantenimiento de tu {$mantenimiento->vehiculo->marca} {$mantenimiento->vehiculo->modelo} está programado para el {$fecha}.\n\n";
-        $mensaje .= "📌 *¿Podrás asistir?* Confirmános haciendo clic aquí:\n";
-        $mensaje .= "✅ Sí, asistiré: {$urlSi}\n";
-        $mensaje .= "❌ No podré asistir: {$urlNo}\n\n";
+        $mensaje .= " *¿Podrás asistir?* Confirmános haciendo clic aquí:\n";
+        $mensaje .= " Sí, asistiré: {$urlSi}\n";
+        $mensaje .= " No podré asistir: {$urlNo}\n\n";
         $mensaje .= "Si necesitas reprogramar, podés responder a este mensaje.";
 
         $telefono = preg_replace('/[^0-9]/', '', $telefono);
