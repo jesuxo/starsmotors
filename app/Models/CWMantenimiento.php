@@ -4,6 +4,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class CWMantenimiento extends Model
@@ -171,5 +172,35 @@ class CWMantenimiento extends Model
     public function ultimoRecordatorio()
     {
         return $this->hasOne(CwRecordatorio::class, 'mantenimiento_id')->latest('fecha_envio');
+    }
+
+    public function generarTokenCorto()
+    {
+        // Si ya tiene token, usarlo pero con formato más corto
+        if ($this->token_cliente) {
+            // Usar solo los primeros 12 caracteres del token existente
+            return $this->token_cliente;
+        }
+
+        // Generar token corto (12 caracteres alfanuméricos)
+        $token = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 12);
+
+        // Verificar que no exista
+        while (CWMantenimiento::where('token_cliente', $token)->exists()) {
+            $token = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 12);
+        }
+
+        $this->token_cliente = $token;
+        $this->save();
+
+        return $token;
+    }
+
+    public function getTokenCortoAttribute()
+    {
+        if ($this->token_cliente) {
+            return $this->token_cliente;
+        }
+        return $this->generarTokenCorto();
     }
 }

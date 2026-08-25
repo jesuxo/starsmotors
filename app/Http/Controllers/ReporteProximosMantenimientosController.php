@@ -131,14 +131,16 @@ class ReporteProximosMantenimientosController extends Controller
     {
         $mantenimiento = CWMantenimiento::with('vehiculo', 'vehiculo.cliente')->findOrFail($id);
 
-        // Generar token si no existe
+        // Generar token corto (12 caracteres)
         if (!$mantenimiento->token_cliente) {
-            $mantenimiento->generarTokenCliente();
+            $token = $mantenimiento->generarTokenCorto();
+        } else {
+            $token = $mantenimiento->token_cliente;
         }
 
-        // Crear URL específica para confirmación
+        // Crear URL específica para confirmación con token corto
         $urlBase = route('cliente.mantenimiento.confirmar-vista', [
-            'token' => $mantenimiento->token_cliente
+            'token' => $token
         ]);
 
         $urlSi = $urlBase . '?respuesta=si';
