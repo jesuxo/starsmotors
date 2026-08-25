@@ -540,6 +540,12 @@
         }
 
         function enviarWhatsApp(id) {
+            // Mostrar indicador de carga
+            const btn = event.target.closest('button');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i>';
+            btn.disabled = true;
+
             $.ajax({
                 url: '/reportes/proximos-mantenimientos/' + id + '/enviar-recordatorio',
                 method: 'POST',
@@ -547,11 +553,32 @@
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+
                     if (response.success) {
-                        window.open(response.whatsapp_url, '_blank');
+                        // Detectar si es iPhone/iOS
+                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+                        // URL de WhatsApp
+                        const whatsappUrl = response.whatsapp_url;
+
+                        if (isIOS) {
+                            // Para iOS, usar window.location.href funciona mejor
+                            window.location.href = whatsappUrl;
+                        } else {
+                            // Para otros dispositivos, abrir en nueva pestaña
+                            window.open(whatsappUrl, '_blank');
+                        }
                     } else {
-                        alert(response.message);
+                        alert(response.message || 'Error al enviar el mensaje');
                     }
+                },
+                error: function(xhr) {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    alert('Error de conexión. Intente nuevamente.');
                 }
             });
         }

@@ -144,7 +144,10 @@ class ReporteProximosMantenimientosController extends Controller
         $urlSi = $urlBase . '?respuesta=si';
         $urlNo = $urlBase . '?respuesta=no';
 
-        $telefono = $mantenimiento->vehiculo->cliente->telef ?? $mantenimiento->vehiculo->cliente->movil;
+        // Obtener teléfono - priorizar móvil
+        $telefono = $mantenimiento->vehiculo->cliente->movil ??
+            $mantenimiento->vehiculo->cliente->telef ??
+            null;
 
         if (!$telefono) {
             return response()->json([
@@ -158,13 +161,27 @@ class ReporteProximosMantenimientosController extends Controller
             : 'próximamente';
 
         $mensaje = "Hola! Te recordamos que el próximo mantenimiento de tu {$mantenimiento->vehiculo->marca} {$mantenimiento->vehiculo->modelo} está programado para el {$fecha}.\n\n";
-        $mensaje .= " *¿Podrás asistir?* Confirmános haciendo clic aquí:\n";
+        $mensaje .= "¿Podrás asistir? Confirmános haciendo clic aquí:\n";
         $mensaje .= " Sí, asistiré: {$urlSi}\n";
         $mensaje .= " No podré asistir: {$urlNo}\n\n";
-        $mensaje .= "Si necesitas reprogramar, podés responder a este mensaje.";
+        $mensaje .= "Si necesitas reprogramar, responde a este mensaje.";
 
-        $telefono = preg_replace('/[^0-9]/', '', $telefono);
-        $whatsappUrl = "https://wa.me/{$telefono}?text=" . urlencode($mensaje);
+        // Limpiar número de teléfono (solo dígitos)
+        $telefonoLimpio = preg_replace('/[^0-9]/', '', $telefono);
+
+        // Si el número no tiene código de país, agregar el de Venezuela (+58)
+        if (strlen($telefonoLimpio) == 10 && substr($telefonoLimpio, 0, 1) != '0') {
+            $telefonoLimpio = '58' . $telefonoLimpio;
+        }
+
+        // Si el número comienza con 0, quitarlo
+        if (substr($telefonoLimpio, 0, 1) == '0') {
+            $telefonoLimpio = substr($telefonoLimpio, 1);
+        }
+
+        // Construir URL de WhatsApp con manejo especial para iOS
+        $mensajeCodificado = urlencode($mensaje);
+        $whatsappUrl = "https://wa.me/{$telefonoLimpio}?text={$mensajeCodificado}";
 
         // Registrar el envío del recordatorio
         $recordatorio = new \App\Models\CwRecordatorio();
@@ -184,10 +201,10 @@ class ReporteProximosMantenimientosController extends Controller
         return response()->json([
             'success' => true,
             'whatsapp_url' => $whatsappUrl,
-            'url_si' => $urlSi,
-            'url_no' => $urlNo,
+            'telefono' => $telefonoLimpio,
             'mensaje' => $mensaje,
-            'recordatorio_id' => $recordatorio->id
+            'recordatorio_id' => $recordatorio->id,
+            'is_ios' => $request->header('User-Agent') && strpos($request->header('User-Agent'), 'iPhone') !== false
         ]);
     }
 }
