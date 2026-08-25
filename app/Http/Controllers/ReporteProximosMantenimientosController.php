@@ -125,28 +125,21 @@ class ReporteProximosMantenimientosController extends Controller
         ]);
     }
 
-
-
     public function enviarRecordatorio(Request $request, $id)
     {
         $mantenimiento = CWMantenimiento::with('vehiculo', 'vehiculo.cliente')->findOrFail($id);
 
-        // Generar token corto (12 caracteres)
+        // Generar token corto
         if (!$mantenimiento->token_cliente) {
             $token = $mantenimiento->generarTokenCorto();
         } else {
             $token = $mantenimiento->token_cliente;
         }
 
-        // Crear URL específica para confirmación con token corto
-        $urlBase = route('cliente.mantenimiento.confirmar-vista', [
-            'token' => $token
-        ]);
-
+        $urlBase = route('cliente.mantenimiento.confirmar-vista', ['token' => $token]);
         $urlSi = $urlBase . '?respuesta=si';
         $urlNo = $urlBase . '?respuesta=no';
 
-        // Obtener teléfono - priorizar móvil
         $telefono = $mantenimiento->vehiculo->cliente->movil ??
             $mantenimiento->vehiculo->cliente->telef ??
             null;
@@ -162,30 +155,30 @@ class ReporteProximosMantenimientosController extends Controller
             ? $mantenimiento->proximo_mantenimiento->format('d/m/Y')
             : 'próximamente';
 
-        $mensaje = "Hola! Te recordamos que el próximo mantenimiento de tu {$mantenimiento->vehiculo->marca} {$mantenimiento->vehiculo->modelo} está programado para el {$fecha}.\n\n";
-        $mensaje .= "¿Podrás asistir? Confirmános haciendo clic aquí:\n\n";
-        $mensaje .= " Sí, asistiré: {$urlSi}\n\n";
-        $mensaje .= " No podré asistir: {$urlNo}\n\n";
-        $mensaje .= "Si necesitas reprogramar, responde a este mensaje.";
+        // Mensaje con formato visual de botones
+        $mensaje = "🔧 *RECORDATORIO DE MANTENIMIENTO*\n\n";
+        $mensaje .= "Hola! Te recordamos que el próximo mantenimiento de tu *{$mantenimiento->vehiculo->marca} {$mantenimiento->vehiculo->modelo}* está programado para el *{$fecha}*.\n\n";
+        $mensaje .= "🛠️ *¿Podrás asistir?*\n\n";
+        $mensaje .= "✅ *Sí, asistiré*\n";
+        $mensaje .= "🔗 {$urlSi}\n\n";
+        $mensaje .= "❌ *No podré asistir*\n";
+        $mensaje .= "🔗 {$urlNo}\n\n";
+        $mensaje .= "─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─\n";
+        $mensaje .= "💬 Responde a este mensaje si tienes alguna duda.";
 
-        // Limpiar número de teléfono (solo dígitos)
+        // Limpiar número de teléfono
         $telefonoLimpio = preg_replace('/[^0-9]/', '', $telefono);
 
-        // Si el número no tiene código de país, agregar el de Venezuela (+58)
         if (strlen($telefonoLimpio) == 10 && substr($telefonoLimpio, 0, 1) != '0') {
             $telefonoLimpio = '58' . $telefonoLimpio;
         }
-
-        // Si el número comienza con 0, quitarlo
         if (substr($telefonoLimpio, 0, 1) == '0') {
             $telefonoLimpio = substr($telefonoLimpio, 1);
         }
 
-        // Construir URL de WhatsApp con manejo especial para iOS
-        $mensajeCodificado = urlencode($mensaje);
-        $whatsappUrl = "https://wa.me/{$telefonoLimpio}?text={$mensajeCodificado}";
+        $whatsappUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
 
-        // Registrar el envío del recordatorio
+        // Registrar envío
         $recordatorio = new \App\Models\CwRecordatorio();
         $recordatorio->mantenimiento_id = $mantenimiento->id;
         $recordatorio->tipo = 'whatsapp';
@@ -195,7 +188,6 @@ class ReporteProximosMantenimientosController extends Controller
         $recordatorio->respuesta_cliente = 'pendiente';
         $recordatorio->save();
 
-        // Marcar al cliente como contactado
         $mantenimiento->cliente_contactado = true;
         $mantenimiento->fecha_contactado = now();
         $mantenimiento->save();
@@ -206,7 +198,8 @@ class ReporteProximosMantenimientosController extends Controller
             'telefono' => $telefonoLimpio,
             'mensaje' => $mensaje,
             'recordatorio_id' => $recordatorio->id,
-            'is_ios' => $request->header('User-Agent') && strpos($request->header('User-Agent'), 'iPhone') !== false
+            'url_si' => $urlSi,
+            'url_no' => $urlNo
         ]);
     }
 }
