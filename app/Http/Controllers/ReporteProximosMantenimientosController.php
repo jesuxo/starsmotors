@@ -163,8 +163,8 @@ class ReporteProximosMantenimientosController extends Controller
             : 'próximamente';
 
         $mensaje = "Hola! Te recordamos que el próximo mantenimiento de tu {$mantenimiento->vehiculo->marca} {$mantenimiento->vehiculo->modelo} está programado para el {$fecha}.\n\n";
-        $mensaje .= "¿Podrás asistir? Confirmános haciendo clic aquí:\n";
-        $mensaje .= " Sí, asistiré: {$urlSi}\n";
+        $mensaje .= "¿Podrás asistir? Confirmános haciendo clic aquí:\n\n";
+        $mensaje .= " Sí, asistiré: {$urlSi}\n\n";
         $mensaje .= " No podré asistir: {$urlNo}\n\n";
         $mensaje .= "Si necesitas reprogramar, responde a este mensaje.";
 
