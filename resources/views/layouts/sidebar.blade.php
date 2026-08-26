@@ -79,7 +79,7 @@
 
                     @if(Auth::user()  and auth()->user()->can('menu_token') )
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="/reporte/tokens"   >
+                            <a class="nav-link menu-link" href="/tokens"   >
                                 <i class="bi bi-key"></i> <span data-key="t-sellers">Tokens</span>
                             </a>
                         </li>
