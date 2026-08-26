@@ -11,6 +11,7 @@ use App\Http\Controllers\MantenimientoRapidoController;
 use App\Http\Controllers\SaprodController;
 use App\Http\Controllers\SafactController;
 use App\Http\Controllers\SaprodImagenController;
+use App\Http\Controllers\CwtokenController;
 use App\Http\Controllers\UserSucursalController;
 use Illuminate\Support\Facades\Route;
 
@@ -166,10 +167,17 @@ Route::middleware(['check.admin'])->group(function () {
         [App\Http\Controllers\MantenimientoRapidoController::class, 'actualizarVehiculo'])
         ->name('mantenimiento.rapido.actualizar-vehiculo');
 
-    Route::resource('tokens', \App\Http\Controllers\CwtokenController::class);
-    Route::controller(\App\Http\Controllers\CwtokenController::class)->group(function () {
-        Route::match(['get','post'],'reporte/tokens', 'reportetokens')->name('reportetokens');
-        Route::post('token/update', 'tokenupdate')->name('tokenupdate');
+    Route::resource('tokens',  CwtokenController::class);
+    Route::prefix('tokens')->group(function () {
+        Route::get('/', [CwtokenController::class, 'reportetokens'])->name('reportetokens');
+        Route::post('/', [CwtokenController::class, 'reportetokens']);
+        Route::post('/store', [CwtokenController::class, 'store'])->name('tokens.store');
+        Route::post('/update', [CwtokenController::class, 'tokenupdate'])->name('token.update');
+        Route::post('/generar-auto', [CwtokenController::class, 'generarTokenAuto']);
+        Route::post('/new', [CwtokenController::class, 'newtoken']);
+        Route::get('/export', [CwtokenController::class, 'export']);
+        Route::delete('/{id}', [CwtokenController::class, 'destroy']);
+        Route::post('/bulk-delete', [CwtokenController::class, 'bulkDelete']);
     });
 
     Route::get('/verpermisos/{id?}', [PermissionController::class, 'showForm'])->name('permissions.assign');
